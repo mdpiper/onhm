@@ -648,7 +648,7 @@ class BmiOnhm(Bmi):
         """
         if config_file:
             with open(config_file, "r") as fp:
-                conf = yaml.safe_load(fp).get("ohnm", {})
+                conf = yaml.safe_load(fp).get("onhm", {})
         else:
             conf = {}
         conf.setdefault("start_date", "2019-07-15")
