@@ -671,9 +671,11 @@ class BmiOnhm(Bmi):
             )
         }
 
+        self._day = 0
+
         self._var = {}
         for name in self._output_var_names:
-            array = self._data[name].values
+            array = self._data.isel(day=self._day)[name].values
             self._var[name] = BmiVar(
                 dtype=str(array.dtype),
                 itemsize=array.itemsize,
@@ -682,8 +684,6 @@ class BmiOnhm(Bmi):
                 location="node",
                 grid=0,
             )
-
-        self._day = 0
 
     def set_value(self, name: str, values: numpy.ndarray) -> None:
         """Specify a new value for a model variable.
