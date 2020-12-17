@@ -49,7 +49,5 @@ before_script:
 - conda install --file=requirements-testing.txt -c conda-forge
 script:
 - pytest --cov=onhm --cov-report=xml:$(pwd)/coverage.xml -vvv
-- pushd notebooks \
-  && bmi-test onhm:BmiOnhm --config-file=config.yaml --root-dir=. -vvv \
-  && popd
+- bmi-test onhm:BmiOnhm --config-file=./notebooks/config.yaml --root-dir=./notebooks -vvv
 after_success: coveralls
