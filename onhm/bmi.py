@@ -65,7 +65,7 @@ class BmiOnhm(Bmi):
         float
             The maximum model time.
         """
-        return self._data.dims["day"]
+        return float(self._data.dims["day"])
 
     def get_grid_edge_count(self, grid: int) -> int:
         """Get the number of edges in the grid.
