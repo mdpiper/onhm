@@ -118,6 +118,25 @@ class BmiOnhm(Bmi):
         """
         raise NotImplementedError("get_grid_face_count")
 
+    def get_grid_face_edges(
+            self, grid: int, face_edges: numpy.ndarray
+    ) -> numpy.ndarray:
+        """Get the face-edge connectivity.
+
+        Parameters
+        ----------
+        grid : int
+            A grid identifier.
+        face_edges : ndarray of int
+            A numpy array to place the face-edge connectivity.
+
+        Returns
+        -------
+        ndarray of int
+            The input numpy array that holds the face-edge connectivity.
+        """
+        raise NotImplementedError("get_grid_face_edges")
+
     def get_grid_face_nodes(
         self, grid: int, face_nodes: numpy.ndarray
     ) -> numpy.ndarray:
@@ -323,6 +342,16 @@ class BmiOnhm(Bmi):
         """
         raise NotImplementedError("get_grid_z")
 
+    def get_input_item_count(self) -> int:
+        """Count of a model's input variables.
+
+        Returns
+        -------
+        int
+          The number of input variables.
+        """
+        return len(self._input_var_names)
+
     def get_input_var_names(self) -> Tuple[str]:
         """List of a model's input variables.
 
@@ -344,6 +373,16 @@ class BmiOnhm(Bmi):
         Standard Names do not have to be used within the model.
         """
         return self._input_var_names
+
+    def get_output_item_count(self) -> int:
+        """Count of a model's output variables.
+
+        Returns
+        -------
+        int
+          The number of output variables.
+        """
+        return len(self._output_var_names)
 
     def get_output_var_names(self) -> Tuple[str]:
         """List of a model's output variables.
@@ -685,3 +724,13 @@ class BmiOnhm(Bmi):
         method can return with no action.
         """
         self._day += 1
+
+    def update_until(self, time: float) -> None:
+        """Advance model state until the given time.
+
+        Parameters
+        ----------
+        time : float
+            A model time later than the current model time.
+        """
+        raise NotImplementedError("update_until")
