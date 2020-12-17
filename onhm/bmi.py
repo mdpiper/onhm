@@ -209,7 +209,8 @@ class BmiOnhm(Bmi):
             The input numpy array that holds the coordinates of the grid's
             lower-left corner.
         """
-        return self._grid[grid].yx_of_lower_left
+        origin[:] = self._grid[grid].yx_of_lower_left
+        return origin
 
     def get_grid_rank(self, grid: int) -> int:
         """Get number of dimensions of the computational grid.
@@ -274,7 +275,8 @@ class BmiOnhm(Bmi):
         ndarray of float
             The input numpy array that holds the grid's spacing.
         """
-        return self._grid[grid].yx_spacing
+        spacing[:] = self._grid[grid].yx_spacing
+        return spacing
 
     def get_grid_type(self, grid: int) -> str:
         """Get the grid type as a string.
