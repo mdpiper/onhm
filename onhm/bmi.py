@@ -456,7 +456,8 @@ class BmiOnhm(Bmi):
         ndarray
             The same numpy array that was passed as an input buffer.
         """
-        dest[:] = self.data.dataset[name][self._day].reshape(-1)
+        dest[:] = self.get_value_ptr(name).reshape(-1).copy()
+        return dest
 
     def get_value_at_indices(
         self, name: str, dest: numpy.ndarray, inds: numpy.ndarray
@@ -477,7 +478,8 @@ class BmiOnhm(Bmi):
         array_like
             Value of the model variable at the given location.
         """
-        dest[:] = self.data.dataset[name][self._day].reshape(-1)[inds]
+        dest[:] = self._data[name][self._day].reshape(-1)[inds]
+        return dest
 
     def get_value_ptr(self, name: str) -> numpy.ndarray:
         """Get a reference to values of the given variable.
@@ -496,7 +498,7 @@ class BmiOnhm(Bmi):
         array_like
             A reference to a model variable.
         """
-        return self.data.dataset[name][self._day].values
+        return self._data[name][self._day].values
 
     def get_var_grid(self, name: str) -> int:
         """Get grid identifier for the given variable.
