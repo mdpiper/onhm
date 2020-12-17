@@ -407,7 +407,7 @@ class BmiOnhm(Bmi):
         float
             The model start time.
         """
-        raise NotImplementedError("get_start_time")
+        return 0.0
 
     def get_time_step(self) -> float:
         """Current time step of the model.
