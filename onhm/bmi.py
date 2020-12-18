@@ -65,7 +65,7 @@ class BmiOnhm(Bmi):
         float
             The maximum model time.
         """
-        return self.dataset.dims["day"]
+        return float(self._data.dims["day"])
 
     def get_grid_edge_count(self, grid: int) -> int:
         """Get the number of edges in the grid.
@@ -117,6 +117,25 @@ class BmiOnhm(Bmi):
             The total number of grid faces.
         """
         raise NotImplementedError("get_grid_face_count")
+
+    def get_grid_face_edges(
+            self, grid: int, face_edges: numpy.ndarray
+    ) -> numpy.ndarray:
+        """Get the face-edge connectivity.
+
+        Parameters
+        ----------
+        grid : int
+            A grid identifier.
+        face_edges : ndarray of int
+            A numpy array to place the face-edge connectivity.
+
+        Returns
+        -------
+        ndarray of int
+            The input numpy array that holds the face-edge connectivity.
+        """
+        raise NotImplementedError("get_grid_face_edges")
 
     def get_grid_face_nodes(
         self, grid: int, face_nodes: numpy.ndarray
@@ -190,7 +209,8 @@ class BmiOnhm(Bmi):
             The input numpy array that holds the coordinates of the grid's
             lower-left corner.
         """
-        return self._grid[grid].yx_of_lower_left
+        origin[:] = self._grid[grid].yx_of_lower_left
+        return origin
 
     def get_grid_rank(self, grid: int) -> int:
         """Get number of dimensions of the computational grid.
@@ -238,7 +258,7 @@ class BmiOnhm(Bmi):
         int
             Size of the grid.
         """
-        return numpy.prod(self._grid[grid].shape)
+        return int(numpy.prod(self._grid[grid].shape))
 
     def get_grid_spacing(self, grid: int, spacing: numpy.ndarray) -> numpy.ndarray:
         """Get distance between nodes of the computational grid.
@@ -255,7 +275,8 @@ class BmiOnhm(Bmi):
         ndarray of float
             The input numpy array that holds the grid's spacing.
         """
-        return self._grid[grid].yx_spacing
+        spacing[:] = self._grid[grid].yx_spacing
+        return spacing
 
     def get_grid_type(self, grid: int) -> str:
         """Get the grid type as a string.
@@ -323,6 +344,16 @@ class BmiOnhm(Bmi):
         """
         raise NotImplementedError("get_grid_z")
 
+    def get_input_item_count(self) -> int:
+        """Count of a model's input variables.
+
+        Returns
+        -------
+        int
+          The number of input variables.
+        """
+        return len(self._input_var_names)
+
     def get_input_var_names(self) -> Tuple[str]:
         """List of a model's input variables.
 
@@ -344,6 +375,16 @@ class BmiOnhm(Bmi):
         Standard Names do not have to be used within the model.
         """
         return self._input_var_names
+
+    def get_output_item_count(self) -> int:
+        """Count of a model's output variables.
+
+        Returns
+        -------
+        int
+          The number of output variables.
+        """
+        return len(self._output_var_names)
 
     def get_output_var_names(self) -> Tuple[str]:
         """List of a model's output variables.
@@ -368,7 +409,7 @@ class BmiOnhm(Bmi):
         float
             The model start time.
         """
-        raise NotImplementedError("get_start_time")
+        return 0.0
 
     def get_time_step(self) -> float:
         """Current time step of the model.
@@ -415,7 +456,8 @@ class BmiOnhm(Bmi):
         ndarray
             The same numpy array that was passed as an input buffer.
         """
-        dest[:] = self.data.dataset[name][self._day].reshape(-1)
+        dest[:] = self.get_value_ptr(name).reshape(-1).copy()
+        return dest
 
     def get_value_at_indices(
         self, name: str, dest: numpy.ndarray, inds: numpy.ndarray
@@ -436,7 +478,8 @@ class BmiOnhm(Bmi):
         array_like
             Value of the model variable at the given location.
         """
-        dest[:] = self.data.dataset[name][self._day].reshape(-1)[inds]
+        dest[:] = self._data[name][self._day].reshape(-1)[inds]
+        return dest
 
     def get_value_ptr(self, name: str) -> numpy.ndarray:
         """Get a reference to values of the given variable.
@@ -455,7 +498,7 @@ class BmiOnhm(Bmi):
         array_like
             A reference to a model variable.
         """
-        return self.data.dataset[name][self._day].values
+        return self._data[name][self._day].values
 
     def get_var_grid(self, name: str) -> int:
         """Get grid identifier for the given variable.
@@ -605,7 +648,7 @@ class BmiOnhm(Bmi):
         """
         if config_file:
             with open(config_file, "r") as fp:
-                conf = yaml.safe_load(fp).get("ohnm", {})
+                conf = yaml.safe_load(fp).get("onhm", {})
         else:
             conf = {}
         conf.setdefault("start_date", "2019-07-15")
@@ -628,9 +671,11 @@ class BmiOnhm(Bmi):
             )
         }
 
+        self._day = 0
+
         self._var = {}
         for name in self._output_var_names:
-            array = self._data[name].values
+            array = self._data.isel(day=self._day)[name].values
             self._var[name] = BmiVar(
                 dtype=str(array.dtype),
                 itemsize=array.itemsize,
@@ -639,8 +684,6 @@ class BmiOnhm(Bmi):
                 location="node",
                 grid=0,
             )
-
-        self._day = 0
 
     def set_value(self, name: str, values: numpy.ndarray) -> None:
         """Specify a new value for a model variable.
@@ -685,3 +728,13 @@ class BmiOnhm(Bmi):
         method can return with no action.
         """
         self._day += 1
+
+    def update_until(self, time: float) -> None:
+        """Advance model state until the given time.
+
+        Parameters
+        ----------
+        time : float
+            A model time later than the current model time.
+        """
+        raise NotImplementedError("update_until")
